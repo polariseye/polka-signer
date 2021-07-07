@@ -1,0 +1,25 @@
+{
+  "name": "polka-signer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc index.ts --skipLibCheck",
+    "run": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polariseye/polka-signer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/polariseye/polka-signer/issues"
+  },
+  "homepage": "https://github.com/polariseye/polka-signer#readme",
+  "dependencies": {
+    "@polkadot/api": "^4.17.1",
+    "@polkadot/types": "^4.17.1"
+  }
+}
