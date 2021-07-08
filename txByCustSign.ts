@@ -4,6 +4,7 @@ import { Keyring } from "@polkadot/keyring";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { blake2AsHex,decodeAddress } from '@polkadot/util-crypto';
 import { cryptoWaitReady, mnemonicGenerate } from '@polkadot/util-crypto';
+import { u8aToHex } from '@polkadot/util';
 
 /* 
     the code can refer to https://github.com/polkadot-js/api/issues/1421
@@ -31,13 +32,13 @@ async function main(){
 
     let signedBlock = await api.rpc.chain.getBlock();
     // create the payload
+    // the blockHash field must be genesisHash.if not the sign will error. i don't know the reason
     const signer = api.createType('SignerPayload', {
-        blockHash:  signedBlock.hash.toString(),
+        blockHash:  api.genesisHash.toString(),
         genesisHash: api.genesisHash.toString(),
         nonce:accountInfo.nonce,
         runtimeVersion: api.runtimeVersion,
         address:from,
-        blockNumber:signedBlock.block.header.number.toString(),
         method: tx,
         version: api.extrinsicVersion,
     });
@@ -60,9 +61,11 @@ async function main(){
     newVal[0] = 0x1; // i use sr25519.so the first byte is 1.it refer to https://github.com/polkadot-js/api/blob/master/packages/types/src/interfaces/extrinsics/definitions.ts#L31
     newVal.set(sigVal,1);
 
+    console.log("sign:", u8aToHex(newVal))
     tx.addSignature(from, newVal, signer.toPayload());
 
-    console.log(await tx.send());
+    let returnedSign = await tx.send();
+    console.log(`returned hash:${returnedSign.toString()}`);
   } catch (error) {
       console.error(error);
   }  

@@ -40,22 +40,23 @@ var api_1 = require("@polkadot/api");
 var keyring_1 = require("@polkadot/keyring");
 var util_crypto_1 = require("@polkadot/util-crypto");
 var util_crypto_2 = require("@polkadot/util-crypto");
+var util_1 = require("@polkadot/util");
 /*
     the code can refer to https://github.com/polkadot-js/api/issues/1421
     and it will not work by the refer code. i change the sign detail code
 */
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var wsProvider, api, keyring, Alice, from, to, amount, tx, accountInfo, signedBlock, signer, unsignedDetail, hashed, sigVal, newVal, _a, _b, error_1;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var wsProvider, api, keyring, Alice, from, to, amount, tx, accountInfo, signedBlock, signer, unsignedDetail, hashed, sigVal, newVal, returnedSign, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0: return [4 /*yield*/, util_crypto_2.cryptoWaitReady()];
                 case 1:
-                    _c.sent(); // wait sr25519 init finish
+                    _a.sent(); // wait sr25519 init finish
                     wsProvider = new api_1.WsProvider('wss://westend-rpc.polkadot.io');
                     return [4 /*yield*/, api_1.ApiPromise.create({ provider: wsProvider })];
                 case 2:
-                    api = _c.sent();
+                    api = _a.sent();
                     console.log("start handle");
                     keyring = new keyring_1.Keyring({
                         type: "sr25519"
@@ -67,24 +68,23 @@ function main() {
                     tx = api.tx.balances.transfer(to, amount);
                     return [4 /*yield*/, api.query.system.account(from)];
                 case 3:
-                    accountInfo = _c.sent();
+                    accountInfo = _a.sent();
                     console.log("nonce:" + JSON.stringify(accountInfo));
                     return [4 /*yield*/, api.rpc.chain.getBlock()];
                 case 4:
-                    signedBlock = _c.sent();
+                    signedBlock = _a.sent();
                     signer = api.createType('SignerPayload', {
-                        blockHash: signedBlock.hash.toString(),
+                        blockHash: api.genesisHash.toString(),
                         genesisHash: api.genesisHash.toString(),
                         nonce: accountInfo.nonce,
                         runtimeVersion: api.runtimeVersion,
                         address: from,
-                        blockNumber: signedBlock.block.header.number.toString(),
                         method: tx,
                         version: api.extrinsicVersion
                     });
-                    _c.label = 5;
+                    _a.label = 5;
                 case 5:
-                    _c.trys.push([5, 7, , 8]);
+                    _a.trys.push([5, 7, , 8]);
                     unsignedDetail = signer.toRaw();
                     hashed = (unsignedDetail.data.length > (256 + 1) * 2)
                         ? util_crypto_1.blake2AsHex(unsignedDetail.data)
@@ -94,14 +94,15 @@ function main() {
                     newVal = new Uint8Array(sigVal.byteLength + 1);
                     newVal[0] = 0x1; // i use sr25519.so the first byte is 1.it refer to https://github.com/polkadot-js/api/blob/master/packages/types/src/interfaces/extrinsics/definitions.ts#L31
                     newVal.set(sigVal, 1);
+                    console.log("sign:", util_1.u8aToHex(newVal));
                     tx.addSignature(from, newVal, signer.toPayload());
-                    _b = (_a = console).log;
                     return [4 /*yield*/, tx.send()];
                 case 6:
-                    _b.apply(_a, [_c.sent()]);
+                    returnedSign = _a.sent();
+                    console.log("returned hash:" + returnedSign.toString());
                     return [3 /*break*/, 8];
                 case 7:
-                    error_1 = _c.sent();
+                    error_1 = _a.sent();
                     console.error(error_1);
                     return [3 /*break*/, 8];
                 case 8: return [2 /*return*/];
